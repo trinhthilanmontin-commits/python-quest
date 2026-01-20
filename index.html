@@ -156,13 +156,22 @@ let qs=[],i=0,score=0;
 
 function goLesson(){document.getElementById('screen-login').classList.add('hidden');document.getElementById('screen-lesson').classList.remove('hidden');}
 function startQuiz(){
-  const lv=document.getElementById('level').value;
-  qs=DATA[lv];i=0;score=0;
+  const lesson = document.getElementById('lesson').value;
+  const lv = document.getElementById('level').value;
+
+  qs = DATA[lesson][lv];   // ⭐ DÒNG QUAN TRỌNG
+  i = 0;
+  score = 0;
+
   document.getElementById('screen-lesson').classList.add('hidden');
   document.getElementById('screen-quiz').classList.remove('hidden');
-  document.getElementById('title').innerText=`${document.getElementById('lesson').value} – ${lv.toUpperCase()}`;
+
+  document.getElementById('title').innerText =
+    `${lesson} – ${lv.toUpperCase()}`;
+
   loadQ();
 }
+
 function loadQ(){
   const q=qs[i];
   document.getElementById('question').innerHTML=`<b>Câu ${i+1}:</b> ${q.q}`;
@@ -185,4 +194,5 @@ function showResult(){
 </script>
 </body>
 </html>
+
 
