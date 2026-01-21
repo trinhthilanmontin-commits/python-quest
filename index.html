@@ -17,7 +17,6 @@
     .progress-bar{height:100%;width:0;background:#4caf50;transition:.3s}
     .answer{background:#f3f3f3;padding:8px;border-radius:8px;margin:6px 0}
     footer{text-align:center;color:#fff;padding:10px}
-  </style>
   .lesson-card{
   border:2px solid #0d47a1;
   border-radius:14px;
@@ -34,6 +33,8 @@
 .level-btn.locked{background:#ccc}
 .level-btn.open{background:#4caf50;color:#fff}
 .level-btn.done{background:#2196f3;color:#fff}
+  </style>
+ 
 
 </head>
 <body>
@@ -76,6 +77,37 @@
 <footer>© 2026 – Ứng dụng phục vụ SKKN nâng cao năng lực số HS lớp 10</footer>
 
 <script>
+  let currentLesson="", currentLevel="";
+const LESSONS=["B17","B18","B19","B20","B21"];
+const LEVELS=["biet","hieu","vandung"];
+function initProgress(){
+  if(!localStorage.getItem("progress")){
+    const p={};
+    LESSONS.forEach(l=>{
+      p[l]={biet:false,hieu:false,vandung:false};
+    });
+    localStorage.setItem("progress",JSON.stringify(p));
+  }
+}
+
+function renderLessons(){
+  const p=JSON.parse(localStorage.getItem("progress"));
+  const box=document.getElementById("lesson-list");
+  box.innerHTML="";
+  LESSONS.forEach((l,i)=>{
+    const unlocked=i===0||Object.values(p[LESSONS[i-1]]).every(v=>v);
+    let html=`<div class="lesson-card ${unlocked?"":"locked"}"><h3>${l}</h3>`;
+    LEVELS.forEach((lv,j)=>{
+      const canOpen=unlocked&&(j===0||p[l][LEVELS[j-1]]);
+      const cls=p[l][lv]?"done":(canOpen?"open":"locked");
+      html+=`<button class="level-btn ${cls}" ${canOpen?"":"disabled"}
+        onclick="startQuiz('${l}','${lv}')">${lv.toUpperCase()}</button>`;
+    });
+    html+="</div>";
+    box.innerHTML+=html;
+  });
+}
+
 const DATA = {
   /* =======================
      BÀI 17 – BIẾN VÀ LỆNH GÁN
@@ -162,22 +194,35 @@ const DATA = {
   }
 };
 let qs=[],i=0,score=0;
-
-function goLesson(){document.getElementById('screen-login').classList.add('hidden');document.getElementById('screen-lesson').classList.remove('hidden');}
-function startQuiz(){
+function startQuiz(lesson,lv){
+  qs=DATA[lesson][lv];
+  i=0;score=0;
+  currentLesson=lesson;
+  currentLevel=lv;
+  document.getElementById('screen-lesson').classList.add('hidden');
+  document.getElementById('screen-quiz').classList.remove('hidden');
+  document.getElementById('title').innerText=`${lesson} – ${lv.toUpperCase()}`;
+  loadQ();
+}
+  function goLesson(){
+  if(!hs_name.value||!hs_class.value){
+    alert("Nhập đầy đủ thông tin");
+    return;
+  }
+  initProgress();
+  document.getElementById('screen-login').classList.add('hidden');
+  document.getElementById('screen-lesson').classList.remove('hidden');
+  renderLessons();
+}
   const lesson = document.getElementById('lesson').value;
   const lv = document.getElementById('level').value;
-
   qs = DATA[lesson][lv];   // ⭐ DÒNG QUAN TRỌNG
   i = 0;
   score = 0;
-
   document.getElementById('screen-lesson').classList.add('hidden');
   document.getElementById('screen-quiz').classList.remove('hidden');
-
   document.getElementById('title').innerText =
     `${lesson} – ${lv.toUpperCase()}`;
-
   loadQ();
 }
 
@@ -198,11 +243,15 @@ function showResult(){
   document.getElementById('screen-quiz').classList.add('hidden');
   document.getElementById('screen-result').classList.remove('hidden');
   document.getElementById('score').innerText=`Điểm: ${score}/${qs.length}`;
-  // Có thể gửi kết quả về Google Sheet tại đây
+  const p=JSON.parse(localStorage.getItem("progress"));
+  p[currentLesson][currentLevel]=true;
+  localStorage.setItem("progress",JSON.stringify(p));
 }
+
 </script>
 </body>
 </html>
+
 
 
 
